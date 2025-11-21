@@ -169,8 +169,10 @@ useEffect(() => {
     const newCategory = selectedCategory === category ? null : category
     setSelectedCategory(newCategory)
     setOffset(0)
-    fetchProducts(searchTerm, minPrice, maxPrice, minRating)
+    // já passa a nova categoria direto para a busca
+    fetchProducts(searchTerm, minPrice, maxPrice, minRating, newCategory)
   }
+
 
   const handleFavorite = async (productId: number) => {
     try {
