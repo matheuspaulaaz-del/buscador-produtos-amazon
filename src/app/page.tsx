@@ -32,11 +32,18 @@ export default function HomePage() {
   const [minRating, setMinRating] = useState<number | null>(null)
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
 
-  useEffect(() => {
-    fetchProducts(searchTerm, minPrice, maxPrice, minRating)
+useEffect(() => {
+    // quando muda o offset (paginação), busca de novo com os filtros atuais
+    fetchProducts(searchTerm, minPrice, maxPrice, minRating, selectedCategory)
   }, [offset])
 
-  const fetchProducts = async (term?: string, min?: string, max?: string, rating?: number | null) => {
+  const fetchProducts = async (
+    term?: string,
+    min?: string,
+    max?: string,
+    rating?: number | null,
+    category?: string | null
+  ) => {
     try {
       setLoading(true)
       setError(null)
@@ -61,30 +68,38 @@ export default function HomePage() {
       if (rating !== null) {
         url += `&rating=gte.${rating}`
       }
-      if (selectedCategory) {
-        url += `&category=eq.${selectedCategory}`
+
+      // Adicionar filtro de categoria (usa parâmetro se enviado, senão o state)
+      const categoryFilter = category !== null && category !== undefined
+        ? category
+        : selectedCategory
+
+      if (categoryFilter) {
+        url += `&category=eq.${encodeURIComponent(categoryFilter)}`
       }
-      if (selectedCategory) {
-        url += `&category=eq.${selectedCategory}`
+
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0eGlwaWZndXZ6bHRpYW1zZG1oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM2OTY2MzQsImV4cCI6MjA3OTI3MjYzNH0.nZfEnv1hSYTmRYnHB8rDLZwUk2SJ6SCQCPcNwcYwt3M",
+          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0eGlwaWZndXZ6bHRpYW1zZG1oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM2OTY2MzQsImV4cCI6MjA3OTI3MjYzNH0.nZfEnv1hSYTmRYnHB8rDLZwUk2SJ6SCQCPcNwcYwt3M",
+          "Content-Type": "application/json"
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error(`Erro ao buscar produtos: ${response.status}`)
       }
-      if (selectedCategory) {
-        url += `&category=eq.${selectedCategory}`
-      }
-      if (selectedCategory) {
-        url += `&category=eq.${selectedCategory}`
-      }
-      if (selectedCategory) {
-        url += `&category=eq.${selectedCategory}`
-      }
-      if (selectedCategory) {
-        url += `&category=eq.${selectedCategory}`
-      }
-      if (selectedCategory) {
-        url += `&category=eq.${selectedCategory}`
-      }
-      if (selectedCategory) {
-        url += `&category=eq.${selectedCategory}`
-      }
+
+      const data = await response.json()
+      setProducts(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro desconhecido")
+      console.error("Erro ao buscar produtos:", err)
+    } finally {
+      setLoading(false)
+    }
+  }
 
       const response = await fetch(url, {
         method: "GET",
